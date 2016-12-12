@@ -1,0 +1,23 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: root
+  password: "root"
+  socket: /tmp/mysql.sock
+
+development:
+  <<: *default
+  database: prueba_dev
+
+test:
+  <<: *default
+  database: prueba_test
+
+production:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: root
+  password: "root"
+  socket: /tmp/mysql.sock
