@@ -55,6 +55,7 @@ class TracksController < ApplicationController
         time_begin = Datum.where(track_id: f.id).first
         time_end = Datum.where(track_id: f.id).last
         ### obteniendo la diferencia de tiempo
+        ### validando formato extraño de gpx
         if time_end.time.blank?
           logger.info "Archivo no tiene recurrencia de fecha"
         else

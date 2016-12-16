@@ -1,4 +1,21 @@
+<%= form_for @mark, url: maps_path, :html => { :class => "form-horizontal track" } do |f| %>
+
 <style type='text/css'>
+html,
+body,
+#map {
+  width: 800px;
+  height: 340px;
+  position: relative;
+
+
+}
+
+.get-markers {
+  width: 1000px;
+  margin: 10px 0;
+}
+
 </style>
 <div style="width:100%; height:350px; position:relative; margin-top:90px;">
   <div id='map'></div>
@@ -6,48 +23,136 @@
 <div style="width:100%; height:300px; position:relative;">
   <%= area_chart @data.group(:time).maximum(:ele), discrete: true%>
 </div>
+<div>
+  <input class="get-markers" type="button" value="Get all the Markers" />
+</div>
 <script>
-  $(document).on('turbolinks:load turbolinks:render ready', function() {
-    mapboxgl.accessToken = 'pk.eyJ1Ijoibm9yZWxsYW5hIiwiYSI6ImNpbzR5emozNDAxcHJ2aWx6OHRoNHVzMWMifQ.NMjJ_fsTMlCCkzytqaV0LQ';
-    var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/outdoors-v9',
-      center: [<%=@center.lon%>, <%=@center.lat%>],
-      zoom: 12
-    });
-
-
-
-    map.on('load', function () {
-      map.addSource("route", {
-        "type": "geojson",
-        "data": {
-          "type": "Feature",
-          "geometry": {
-              "type": "LineString",
-              "coordinates": [
-                <%@data.each do |d|%>
-                  [<%=d.lon%>, <%=d.lat%>],
-                <%end%>
-              ]
-          }
-        }
-      });
-      map.addControl(new mapboxgl.NavigationControl());
-
-      map.addLayer({
-        "id": "route",
-        "type": "line",
-        "source": "route",
-        "layout": {
-          "line-join": "round",
-          "line-cap": "round"
-        },
-        "paint": {
-          "line-color": "#fc4353",
-          "line-width": 3
-          }
-      });
-    });
+// We’ll add a OSM tile layer to our map
+var osmUrl = 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+  osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  osm = L.tileLayer(osmUrl, {
+    maxZoom: 18,
+    attribution: osmAttrib
   });
+
+  L.mapbox.accessToken = 'pk.eyJ1Ijoibm9yZWxsYW5hIiwiYSI6ImNpbzR5emozNDAxcHJ2aWx6OHRoNHVzMWMifQ.NMjJ_fsTMlCCkzytqaV0LQ';
+  var map = L.mapbox.map('map', 'mapbox.outdoors')
+      .setView([<%=@center.lat%>, <%=@center.lon%>], 15);
+
+
+// initialize the map on the "map" div with a given center and zoom
+//var map = L.map('map').setView([-38.6738431, -71.8966348], 15).addLayer(osm);
+
+var line_points = [
+  <%@data.each do |d|%>
+    [<%=d.lat%>, <%=d.lon%>],
+  <%end%>
+];
+
+// Define polyline options
+// http://leafletjs.com/reference.html#polyline
+var polyline_options = {
+    color: '#000'
+};
+
+// Defining a polygon here instead of a polyline will connect the
+// endpoints and fill the path.
+// http://leafletjs.com/reference.html#polygon
+var polyline = L.polyline(line_points).addTo(map);
+
+// attaching function on map click
+map.on('click', onMapClick);
+
+// Script for adding marker on map click
+function onMapClick(e) {
+  var geojsonFeature = {
+    "type": "Feature",
+    "properties": {},
+    "geometry": {
+      "type": "Point",
+      "coordinates": [e.latlng.lat, e.latlng.lng]
+    }
+
+  }
+
+
+  var latitude = e.latlng.lat;
+  var longitude = e.latlng.lng;
+
+
+// post para enviar al create
+  $.ajax({
+          url : "/maps/create",
+          type : "post",
+          data : { latlng: {latitude, longitude} }
+      });
+
+  var marker;
+
+  L.geoJson(geojsonFeature, {
+
+    pointToLayer: function(feature, latlng) {
+
+      marker = L.marker(e.latlng, {
+
+        title: "Resource Location",
+        alt: "Resource Location",
+        riseOnHover: true,
+        draggable: true,
+
+      }).bindPopup('<%=f.text_field :label%><%=f.hidden_field :track_id, value: @id%><input type="button" value="Delete this marker" class="marker-delete-button"/>');
+
+      marker.on("popupopen", onPopupOpen);
+
+
+      return marker;
+    }
+  }).addTo(map);
+}
+
+
+// Function to handle delete as well as other events on marker popup open
+function onPopupOpen() {
+
+  var tempMarker = this;
+
+  //var tempMarkerGeoJSON = this.toGeoJSON();
+
+  //var lID = tempMarker._leaflet_id; // Getting Leaflet ID of this marker
+
+  // To remove marker on click of delete
+  $(".marker-delete-button:visible").click(function() {
+    map.removeLayer(tempMarker);
+  });
+}
+
+
+// getting all the markers at once
+function getAllMarkers() {
+
+  var allMarkersObjArray = []; //new Array();
+  var allMarkersGeoJsonArray = []; //new Array();
+
+  $.each(map._layers, function(ml) {
+    //console.log(map._layers)
+    if (map._layers[ml].feature) {
+
+      allMarkersObjArray.push(this)
+      allMarkersGeoJsonArray.push(JSON.stringify(this.toGeoJSON()))
+    }
+  })
+
+  console.log(allMarkersObjArray);
+  alert("total Markers : " + allMarkersGeoJsonArray.length + "\n\n" + allMarkersGeoJsonArray + "\n\n Also see your console for object view of this array");
+}
+
+$(".get-markers").on("click", getAllMarkers);
+
+
 </script>
+
+
+
+
+
+<%end%>
