@@ -70,10 +70,8 @@ class TracksController < ApplicationController
 
 
         format.html { redirect_to @track, notice: 'Carrera creada satisfactoriamente.' }
-        format.json { render :show, status: :created, location: @track }
       else
         format.html { render :new }
-        format.json { render json: @track.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -82,11 +80,9 @@ class TracksController < ApplicationController
   def update
     respond_to do |format|
       if @track.update(track_params)
-        format.html { redirect_to @track, notice: 'Track was successfully updated.' }
-        format.json { render :show, status: :ok, location: @track }
+        format.html { redirect_to @track, notice: 'Carrera creada satisfactoriamente.' }
       else
         format.html { render :edit }
-        format.json { render json: @track.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -95,15 +91,17 @@ class TracksController < ApplicationController
   def destroy
     @track.destroy
     respond_to do |format|
-      format.html { redirect_to tracks_url, notice: 'Track was successfully destroyed.' }
-      format.json { head :no_content }
+      format.html { redirect_to tracks_url, notice: 'Carrera creada satisfactoriamente.' }
     end
   end
+
+
 
   private
     def set_track
       @track = Track.find(params[:id])
     end
+
 
     def track_params
       params.require(:track).permit(:track, :gpx, :gpx_content_type, :gpx_file_size, :gpx_updated_at, :time_begin, :time_end, :time_elapsed)

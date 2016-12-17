@@ -25,11 +25,10 @@ ActiveRecord::Schema.define(version: 20161214030522) do
 
   create_table "marks", force: :cascade do |t|
     t.integer  "track_id",   limit: 4
-    t.decimal  "lat",                    precision: 11, scale: 7
-    t.decimal  "lon",                    precision: 11, scale: 7
-    t.string   "label",      limit: 255
-    t.datetime "created_at",                                      null: false
-    t.datetime "updated_at",                                      null: false
+    t.decimal  "lat",                  precision: 11, scale: 7
+    t.decimal  "lon",                  precision: 11, scale: 7
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
   end
 
   create_table "tracks", force: :cascade do |t|

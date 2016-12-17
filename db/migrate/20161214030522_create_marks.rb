@@ -4,7 +4,6 @@ class CreateMarks < ActiveRecord::Migration
       t.integer :track_id
       t.decimal :lat, :precision => 11, :scale => 7
       t.decimal :lon, :precision => 11, :scale => 7
-      t.string :label
 
       t.timestamps null: false
     end

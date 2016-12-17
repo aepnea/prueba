@@ -1,57 +1,50 @@
 class MapsController < ApplicationController
-  before_action :init_track_id
-  before_filter :init_track_id
+  before_action :set_track_id
+
 
   def maps_view
+    # Tomando variables
+
     @id = params[:id]
+
+    # Cargando data para la vista map_view
+
     @data = Datum.where(track_id: @id)
     @center = Datum.where(track_id: @id).last
-    @mark = Mark.new()
-    @label = "caca"
+
+    # cargando datos para los markers
+    @markers = Mark.where(track_id: @id)
 
   end
-
-  def update
-
-    @lat = params[:latlng][:latitude]
-    @lon = params[:latlng][:longitude]
-    logger.info " ##################################    #{@lat} #{@lon}"
-
-    @mark_create = Mark.create([{lat: @lat, lon: @lon}])
-    @mark_last = Mark.last
-    @mark_last_id = @mark_last.id
-  end
-
 
   def create
-    @label = params[:mark][:label]
-    @datum = params[:mark][:datum]
+    # Tomando variables
+    @lat = params[:latlng][:latitude]
+    @lon = params[:latlng][:longitude]
+    @track_id = params[:latlng][:track_id]
 
+    # logueando para hacer un checkpoint
+    logger.info " ##################################  Creando Marker  #{@lat} #{@lon} #{@track_id}"
 
-    logger.info " ##################################    #{@label} #{@lat} #{@lon}"
+    @mark_create = Mark.create([{lat: @lat, lon: @lon, track_id: @track_id}])
 
-    @mark_last.update(label: @label, lat: @lat, lon: @lon)
+    # redirigiendo para maps_view
+    redirect_to maps_maps_view_path(@track_id)
 
-
-    #if @mark.save
-
-      redirect_to maps_maps_view_path(1)
-      #render :json => { }
-    #else
-    #render :json => { }, :status => 500
-    #end
   end
 
-
-  def mark_params
-    params.require(:mark).permit(:datum_id[], :label[])
+  def destroy
+    track_id = params[:track_id]
+    Mark.destroy(params[:id])
+ ### redirigiendo de vuelta al mapa
+    redirect_to maps_maps_view_path(track_id)
   end
+
 
   def dist_params
     params.require(:latlng).permit(:latitude[], :longitude[])
   end
-  def init_track_id
-      @id = params[:id]
-      return @id
+  def set_track_id
+      @track = params[:id]
   end
 end
