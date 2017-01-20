@@ -1,6 +1,6 @@
 # Load DSL and set up stages
 require "capistrano/setup"
-
+###### PROJ-123 add a README file to the project.
 # Include default deployment tasks
 require "capistrano/deploy"
 
